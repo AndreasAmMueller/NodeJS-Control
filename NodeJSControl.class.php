@@ -25,6 +25,9 @@ class NodeJSControl {
 	private $pathPidFile;
 	private $pathLogfile;
 	
+	private $pathUnxBin;
+	private $pathWinBin;
+	
 	private $pid;
 	
 	/* Constants (default values)
@@ -34,15 +37,18 @@ class NodeJSControl {
 	const PathBinaryLnx = '/usr/local/bin/node';
 	
 	function __construct() {
+		$this->pathUnxBin = __DIR__.'/bin/RunBackground.sh';
+		$this->pathWinBin = __DIR__.'/bin/RunBackground.bat';
+		
 		switch ($this->GetSystem()) {
 			case "mac":
-				$this->pathBinary = self::PathBinaryMac;
+				$this->SetExecutable(self::PathBinaryMac);
 				break;
 			case "lnx":
-				$this->pathBinary = self::PathBinaryLnx;
+				$this->SetExecutable(self::PathBinaryLnx);
 				break;
 			default:
-				$this->pathBinary = self::PathBinaryWin;
+				$this->SetExecutable(self::PathBinaryWin);
 				break;
 		}
 		
@@ -81,10 +87,10 @@ class NodeJSControl {
 	}
 	public function SetExecutable($path) {
 		if (!file_exists($path))
-			throw new Exception("File ".$path." does not exist");
+			throw new \Exception("File ".$path." does not exist");
 		
 		if (!is_executable($path))
-			throw new Exception("File ".$path." is not executable");
+			throw new \Exception("File ".$path." is not executable");
 		
 		$this->pathBinary = $path;
 	}
@@ -94,7 +100,7 @@ class NodeJSControl {
 	}
 	public function SetScript($path) {
 		if (!file_exists($path))
-			throw new Exception("File " . $path . " does not exist");
+			throw new \Exception("File " . $path . " does not exist");
 		
 		$this->pathScript = $path;
 	}
@@ -106,7 +112,7 @@ class NodeJSControl {
 		$dir = dirname($path);
 		
 		if (!is_writable($dir))
-			throw new Exception("Directory ".$dir." not writable for PID file");
+			throw new \Exception("Directory ".$dir." not writable for PID file");
 		
 		$this->pathPidFile = $path;
 	}
@@ -117,7 +123,7 @@ class NodeJSControl {
 	public function SetLogfile($path) {
 		$dir = dirname($path);
 		if (!is_writable($dir))
-			throw new Exception("Directory ".$dir." not writable for logfile");
+			throw new \Exception("Directory ".$dir." not writable for logfile");
 		
 		$this->pathLogfile = $path;
 	}
@@ -134,6 +140,7 @@ class NodeJSControl {
 	public function GetPID() {
 		if ($this->pid == 0) {
 			$pid = @file_get_contents($this->pathPidFile);
+			$pid = trim($pid);
 			if (!empty($pid))
 				$this->pid = $pid;
 		}
@@ -155,12 +162,35 @@ class NodeJSControl {
 	}
 	
 	public function RunBackground() {
-		// TODO: run script in background
-		//       write outputs to log
+		switch ($this->GetSystem()) {
+			case 'lnx':
+			case 'mac':
+				return $this->RunBackgroundUnx();
+				break;
+			case 'win':
+				//return $this->RunBackgroundWin();
+				break;
+			default:
+				throw new \Exception("unknown system");
+				break;
+		}
 	}
 	
 	public function Stop() {
-		// TODO: stop script running in background
+		switch ($this->GetSystem()) {
+			case 'lnx':
+			case 'mac':
+				return $this->StopUnx();
+				break;
+			case 'win':
+				//return $this->StopWin();
+				break;
+			default:
+				throw new \Exception("Unknown system");
+				break;
+		}
+
+		$this->pid = 0;
 	}
 	
 	
@@ -175,6 +205,83 @@ class NodeJSControl {
 		} else {
 			return "win";
 		}
+	}
+	
+	private function RunBackgroundUnx() {
+		if (empty($this->pathBinary) || !is_executable($this->pathBinary))
+			throw new \Exception("Error on executable path");
+		
+		if (empty($this->pathScript) || !file_exists($this->pathScript))
+			throw new \Exception("Error on script path");
+		
+		if (empty($this->pathPidFile))
+			throw new \Exception("Error on pid-file path");
+		
+		if (empty($this->pathLogfile))
+			throw new \Exception("Error on log-file path");
+		
+		if (!file_exists($this->pathUnxBin) || !is_executable($this->pathUnxBin))
+			throw new \Exception("Error background worker");
+		
+		$exec = $this->pathUnxBin.' start '.$this->pathBinary.' '.$this->pathScript;
+		$exec.= ' '.$this->pathPidFile.' '.$this->pathLogfile;
+		
+		$out = array();
+		//$out[] = $exec;
+		exec($exec, $out);
+		
+		return $out;
+	}
+	private function StopUnx() {
+		if (empty($this->pathBinary) || !is_executable($this->pathBinary))
+			throw new \Exception("Error on executable path");
+		
+		if (empty($this->pathScript) || !file_exists($this->pathScript))
+			throw new \Exception("Error on script path");
+		
+		if (empty($this->pathPidFile))
+			throw new \Exception("Error on pid-file path");
+		
+		if (empty($this->pathLogfile))
+			throw new \Exception("Error on log-file path");
+		
+		if (!file_exists($this->pathUnxBin) || !is_executable($this->pathUnxBin))
+			throw new \Exception("Error background worker");
+		
+		$exec = $this->pathUnxBin.' stop '.$this->pathBinary.' '.$this->pathScript;
+		$exec.= ' '.$this->pathPidFile.' '.$this->pathLogfile;
+		
+		exec($exec);
+	}
+	
+	private function PIDinProcesslist() {
+		$pid = $this->GetPID();
+		$line = '';
+		
+		foreach ($this->GetProcesslist() as $row) {
+			if (strpos($row, $pid) !== false) {
+				$line = $row;
+			}
+		}
+		
+		return !empty($line);
+	}
+	
+	private function GetProcesslist() {
+		$out = array();
+		switch ($this->GetSystem()) {
+			case 'mac':
+			case 'lnx':
+				exec('ps aux 2>&1', $out);
+				break;
+			case 'win':
+				exec(__DIR__.'/bin/pslist.exe', $out);
+				break;
+			default:
+				throw new \Exception("Unknown system");
+		}
+		
+		return $out;
 	}
 	
 }
