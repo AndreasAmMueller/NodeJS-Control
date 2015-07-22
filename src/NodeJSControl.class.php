@@ -1,5 +1,4 @@
 <?php
-
 /**
  * NodeJSControl.class.php
  *
@@ -8,7 +7,11 @@
  *
  * @description
  * Wrappes all needed functions to control a NodeJS segment within an CMS
- **/
+ */
+
+/**
+ * Asscociate Namespace
+ */
 namespace AMWD;
 
 @error_reporting(E_ALL);
@@ -33,19 +36,19 @@ class NodeJSControl {
 	/* Constants (default values)
 	============================= */
 	const PathBinaryWin = '"C:\Program Files\nodejs\node.exe"';
-	const PathBinaryMac = '/usr/local/bin/node';
-	const PathBinaryLnx = '/usr/local/bin/node';
-	
+	const PathBinaryUnx = '/usr/local/bin/node';
+
+	const PathUnxBackground = 'bin/RunBackground.sh';
+	const PathWinBackground = 'bin/RunBackground.bat';
+
+	/**
+	 * Constructor with autoselect for system
+	 */
 	function __construct() {
-		$this->pathUnxBin = __DIR__.'/bin/RunBackground.sh';
-		$this->pathWinBin = __DIR__.'/bin/RunBackground.bat';
-		
 		switch ($this->GetSystem()) {
 			case "mac":
-				$this->SetExecutable(self::PathBinaryMac);
-				break;
 			case "lnx":
-				$this->SetExecutable(self::PathBinaryLnx);
+				$this->SetExecutable(self::PathBinaryUnx);
 				break;
 			default:
 				$this->SetExecutable(self::PathBinaryWin);
@@ -54,19 +57,33 @@ class NodeJSControl {
 		
 		$this->pid = 0;
 	}
-	
-	
-	
+
+
+	/**
+	 * Try to return current installed node version
+	 *
+	 * @return string
+	 */
 	public function GetVersion() {
 		$out = array();
 		exec($this->pathBinary.' --version', $out);
 		return $out[0];
 	}
 	
+	/**
+	 * Return version of this control
+	 *
+	 * @return string
+	 */
 	public function GetControlVersion() {
 		return $this->version;
 	}
-	
+
+	/**
+	 * list all relevant infos about the control
+	 *
+	 * @return string
+	 */
 	public function GetInfo() {
 		$str = "NodeJS Control ".$this->GetControlVersion().PHP_EOL;
 		$str.= PHP_EOL;
@@ -77,14 +94,22 @@ class NodeJSControl {
 		$str.= "Script:      ".$this->GetScript().PHP_EOL;
 		$str.= "Status:      ".($this->GetStatus() == "running" ? "running with PID ".$this->GetPID() : "stopped").PHP_EOL;
 		
-		
-		
 		return $str;
 	}
-	
+
+	/**
+	 * Get Path of executable (node)
+	 *
+	 * @return string
+	 */
 	public function GetExecutable() {
 		return $this->pathBinary;
 	}
+
+	/**
+	 * Set path of executable (node)
+	 * Checking file for x flag and existence
+	 */
 	public function SetExecutable($path) {
 		if (!file_exists($path))
 			throw new \Exception("File ".$path." does not exist");
