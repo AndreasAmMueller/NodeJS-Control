@@ -4,7 +4,7 @@
 
 Small class to control your node script without console access.
 
-[![build status](https://ci.am-wd.de/projects/1/status.png?ref=master)](https://ci.am-wd.de/projects/1?ref=master)
+[![build status](https://ci.gitlab.com/projects/4915/status.png?ref=master)](https://ci.gitlab.com/projects/4915?ref=master)
 
 # Features
 
