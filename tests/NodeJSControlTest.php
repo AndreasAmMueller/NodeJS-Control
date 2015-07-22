@@ -28,6 +28,28 @@ class NodeJSControlTest extends \PHPUnit_Framework_TestCase
 			$this->assertEquals(NodeJSControl::PathBinaryUnx, $control->GetExecutable());
 		}
 	}
+
+	public function testRunConsole()
+	{
+		$control = new NodeJSControl();
+		$this->PrepareNode($control);
+
+		$control->SetScript(__DIR__.'/testScripts/node-console.js');
+
+		$test = $control->Run();
+
+		$this->assertEquals(1, count($test));
+		$this->assertEquals("This is a NodeJS console test", $test[0]);
+	}
+
+
+
+	private function PrepareNode($obj)
+	{
+		mkdir(__DIR__.'/tmp/');
+		$obj->SetPIDFile(__DIR__.'/tmp/node.pid');
+		$obj->SetLogfile(__DIR__.'/tmp/node.log');
+	}
 }
 
 
