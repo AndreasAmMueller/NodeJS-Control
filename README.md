@@ -1,12 +1,11 @@
-# NodeJS Control
+# NodeJS Control [![build status](https://ci.gitlab.com/projects/4915/status.png?ref=master)](https://ci.gitlab.com/projects/4915?ref=master)
 
 -----
 
-Small class to control your node script without console access.
+Small class to control your node.js scripts without console access.
 
-[![build status](https://ci.gitlab.com/projects/4915/status.png?ref=master)](https://ci.gitlab.com/projects/4915?ref=master)
 
-# Features
+## Features
 
 // TBC
 
