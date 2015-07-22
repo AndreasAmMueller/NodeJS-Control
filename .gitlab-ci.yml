@@ -1,12 +1,14 @@
 before_script:
-  - mkdir doc
+  - rm -rf tests/tmp tools doc
   - mkdir tools
-  - wget -O tools/phpunit.phar https://phar.phpunit.de/phpunit.phar
-  - wget -O tools/phpDocumentor.phar http://phpdoc.org/phpDocumentor.phar
 
 test:
   script:
-    - php runTests.php
+    - mkdir tests/tmp
+    - wget -O tools/phpunit.phar https://phar.phpunit.de/phpunit.phar
+    - php tools/phpunit.phar tests/NodeJSControlTest
 doc:
   script:
+    - mkdir doc
+    - wget -O tools/phpDocumentor.phar http://phpdoc.org/phpDocumentor.phar
     - php tools/phpDocumentor.phar -d src/ -t doc/
