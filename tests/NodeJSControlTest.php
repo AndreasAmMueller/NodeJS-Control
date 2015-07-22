@@ -8,25 +8,30 @@ class NodeJSControlTest extends \PHPUnit_Framework_TestCase
 {
 	public function testDefaultConstructor()
 	{
-		if (substr(__DIR__, 0, 1) == "/")
+		$c = new NodeJSControl();
+
+		if ($this->GetSystem() == 'win')
 		{
-			$sys = (exec("uname") == "Darwin") ? "mac" : "lnx";
+			// TOOD: How to find installed path
+			$path = $c->GetExecutable();
 		}
 		else
 		{
-			$sys = "win";
+			$path = exec('which nodejs');
+			if (empty($path))
+				$path = exec('which node');
 		}
 
-		$control = new NodeJSControl();
+		$this->assertEquals($path, $c->GetExecutable());
+	}
 
-		if ($sys == "win")
-		{
-			$this->assertEquals(NodeJSControl::PathBinaryWin, $control->GetExecutable());
-		}
-		else
-		{
-			$this->assertEquals(NodeJSControl::PathBinaryUnx, $control->GetExecutable());
-		}
+	/**
+	 * @expectedException InvalidArgumentException
+	 */
+	public function testInvalidExecutablePath()
+	{
+		$c = new NodeJSControl();
+		$c->SetExecutable(__DIR__.'/exec');
 	}
 
 	public function testRunConsole()
@@ -44,11 +49,23 @@ class NodeJSControlTest extends \PHPUnit_Framework_TestCase
 
 
 
+
+
 	private function PrepareNode($obj)
 	{
-		mkdir(__DIR__.'/tmp/');
+		if (!is_dir(__DIR__.'/tmp'))
+			mkdir(__DIR__.'/tmp');
+
 		$obj->SetPIDFile(__DIR__.'/tmp/node.pid');
 		$obj->SetLogfile(__DIR__.'/tmp/node.log');
+	}
+
+	private function GetSystem()
+	{
+		if (substr(__DIR__, 0, 1) == "/")
+			return (exec("uname") == "Darwin") ? "mac" : "lnx";
+
+		return "win";
 	}
 }
 
