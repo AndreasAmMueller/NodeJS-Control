@@ -1,3 +1,12 @@
-test:
-  script: "php runTests.php"
+before_script:
+  - mkdir doc
+  - mkdir tools
+  - wget -O tools/phpunit.phar https://phar.phpunit.de/phpunit.phar
+  - wget -O tools/phpDocumentor.phar http://phpdoc.org/phpDocumentor.phar
 
+test:
+  script:
+    - php runTests.php
+doc:
+  script:
+    - php tools/phpDocumentor.phar -d src/ -t doc/
