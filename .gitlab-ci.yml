@@ -6,9 +6,10 @@ test:
   script:
     - mkdir tests/tmp
     - wget -O tools/phpunit.phar https://phar.phpunit.de/phpunit.phar
-    - php tools/phpunit.phar tests/NodeJSControlTest
+    - php tools/phpunit.phar --verbose tests/ProcessTest
+    - php tools/phpunit.phar --verbose tests/ControlTest
 doc:
   script:
     - mkdir doc
     - wget -O tools/phpDocumentor.phar http://phpdoc.org/phpDocumentor.phar
-    - php tools/phpDocumentor.phar -d src/ -t doc/
+    - php tools/phpDocumentor.phar -p -d src/ -t doc/ --template="clean"
