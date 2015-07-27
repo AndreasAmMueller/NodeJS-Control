@@ -7,13 +7,15 @@ test-nix:
   tags:
     - nodejs
     - nix
-#test-win:
-#  script:
-#    -
-#    -
-#  tags:
-#    - windows
-#    - nodejs
+	- php
+test-win:
+  script:
+	- php tools/phpunit.phar --verbose tests/ProcessTest
+	- php tools/phpunit.phar --verbose tests/ControlTest
+  tags:
+    - windows
+    - nodejs
+    - php
 doc:
   script:
     - php tools/phpDocumentor.phar -p -d src/ -t doc/ --template="clean"

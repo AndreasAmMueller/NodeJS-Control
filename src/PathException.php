@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * PathException.php
  *
  * (c) Andreas Mueller <webmaster@am-wd.de>

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Process.class.php
  * 
  * (c) Andreas Mueller <webmaster@am-wd.de>
@@ -135,6 +135,7 @@ abstract class Process {
 	 * returns true if command is started and pid is greater than zero
 	 *         false in any other case
 	 * 
+	 * @param string $handle how to handle with logfile if set; override or append
 	 * @return bool
 	 */
 	abstract public function Start($handle = self::LOGFILE_OVERRIDE);
@@ -227,6 +228,9 @@ class ProcessUnx extends Process {
 	 * @return bool
 	 */
 	public function Stop() {
+		if ($this->pid == 0)
+			return true;
+		
 		$cmd = 'kill '.$this->pid;
 		exec($cmd);
 		if ($this->Status() == 'stopped') {
@@ -318,7 +322,13 @@ class ProcessWin extends Process {
 	 * @return bool
 	 */
 	public function Start($handle = parent::LOGFILE_OVERRIDE) {
-		throw new \Exception("Not implemented yet");
+		$cmd = trim($this->command);
+		if (!empty($cmd) && $this->pid == 0) {
+			$this->RunCommand($handle);
+			return $this->pid > 0;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -330,7 +340,17 @@ class ProcessWin extends Process {
 	 * @return bool
 	 */
 	public function Stop() {
-		throw new \Exception("Not implemented yet");
+		if ($this->pid == 0)
+			return true;
+		
+		$cmd = __DIR__.'\bin\pskill.exe -accepteula '.$this->pid.' 2>&1';
+		exec($cmd);
+		if ($this->Status() == 'stopped') {
+			//$this->pid = 0;
+			return true;
+		}
+
+		return false;
 	}
 	
 	/**
@@ -341,7 +361,31 @@ class ProcessWin extends Process {
 	 * @return string
 	 */
 	public function Status() {
-		throw new \Exception("Not implemented yet");
+		if ($this->pid == 0)
+			return 'stopped';
+
+		$cmd = __DIR__.'\bin\pslist.exe -accepteula '.$this->pid.' 2>&1';
+		exec($cmd, $stdout);
+		if (!empty($stdout[count($stdout)-1])) {
+			return 'running';
+		}
+		
+		return 'stopped';
+	}
+	
+	/**
+	 * execute given command; sets the pid property
+	 * @param string $handle tell if logfile is appended or overridden
+	 * @return void
+	 */
+	private function RunCommand($handle) {
+		$cmd = __DIR__.'\bin\psexec.exe -d '.$this->command.' 2>&1';
+		exec($cmd, $stdout);
+		
+		$words = explode(' ', $stdout[count($stdout)-1]);
+		$pid = str_replace('.', '', $words[count($words)-1]);
+		
+		$this->pid = (int)$pid;
 	}
 }
 

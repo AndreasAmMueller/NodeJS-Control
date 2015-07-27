@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Control.class.php
  *
  * (c) Andreas Mueller <webmaster@am-wd.de>
@@ -18,7 +18,7 @@ require_once __DIR__.'/PathException.php';
  * @copyright  (c) 2015 Andreas Mueller
  * @license    MIT - http://am-wd.de/index.php?p=about#license
  * @link       https://bitbucket.org/BlackyPanther/nodejs-control
- * @version    v1.0-20150724 | In Development
+ * @version    v1.0-20150727 | stable
  */
 class Control {
 	/**
@@ -86,9 +86,9 @@ class Control {
 				break;
 			case 'win':
 				if (empty($bin))
-					$bin = file_exists('"C:\Program Files\nodejs\node.exe"') ? '"C:\Program Files\nodejs\node.exe"' : '';
+					$bin = file_exists('C:\Program Files\nodejs\node.exe') ? 'C:\Program Files\nodejs\node.exe' : '';
 				if (empty($bin))
-					$bin = file_exists('"C:\Program Files (x86)\nodejs\node.exe"') ? '"C:\Program Files (x86)\nodejs\node.exe"' : '';
+					$bin = file_exists('C:\Program Files (x86)\nodejs\node.exe') ? 'C:\Program Files (x86)\nodejs\node.exe' : '';
 				if (empty($bin))
 					throw new PathException("Specify path to binary");
 
@@ -108,9 +108,16 @@ class Control {
 	 * @return string
 	 */
 	public function NodeVersion() {
-		$out = array();
-		exec($this->pathBinary.' --version', $out);
-		return $out[0];
+		if (self::GetSystem() == 'win') {
+			$cmd = '"'.$this->pathBinary.'"';
+		} else {
+			$cmd = $this->pathBinary;
+		}
+		$cmd .= ' --version';
+		
+		
+		exec($cmd, $stdout);
+		return $stdout[0];
 	}
 
 	/**
@@ -268,8 +275,6 @@ class Control {
 		return $this->process->GetPID();
 	}
 
-
-
 	/**
 	 * Execute script in foreground and wait for termination
 	 * @return string[]
@@ -282,8 +287,14 @@ class Control {
 		if (empty($this->pathBinary))
 			throw new PathException("no path to binary");
 
-		$stdout = array();
-		exec($this->pathBinary.' '.$this->pathScript, $stdout);
+		if (self::GetSystem() == 'win') {
+			$cmd = '"'.$this->pathBinary.'"';
+		} else {
+			$cmd = $this->pathBinary;
+		}
+		$cmd .= ' '.$this->pathScript;
+		
+		exec($cmd, $stdout);
 
 		return $stdout;
 	}
@@ -342,7 +353,7 @@ class Control {
 	 * Try to recognize system (win|lnx|mac)
 	 * @return string
 	 */
-	private function GetSystem() {
+	protected static function GetSystem() {
 		if (substr(__DIR__, 0, 1) == "/") {
 			return (exec("uname") == "Darwin") ? "mac" : "lnx";
 		} else {
@@ -354,8 +365,13 @@ class Control {
 	 * Updates data of process object
 	 * @return void
 	 */
-	private function UpdateProcess() {
-		$cmd = $this->pathBinary.' '.$this->pathScript;
+	protected function UpdateProcess() {
+		if (self::GetSystem() == 'win') {
+			$cmd = '"'.$this->pathBinary.'"';
+		} else {
+			$cmd = $this->pathBinary;
+		}
+		$cmd .= ' '.$this->pathScript;
 		$this->process->SetCommand($cmd);
 		
 		if (!empty($this->pathLogfile))
