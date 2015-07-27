@@ -1,4 +1,4 @@
-# NodeJS Control [![build status](https://ci.am-wd.de/projects/2/status.png?ref=master)](https://ci.am-wd.de/projects/2?ref=master)
+# NodeJS Control [![build status](https://ci.gitlab.com/projects/4927/status.png?ref=master)](https://ci.gitlab.com/projects/4927?ref=master)
 -----
 
 Small class to control your node.js scripts without console access.
