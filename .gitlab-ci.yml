@@ -6,8 +6,7 @@ test-nix:
     - php tools/phpunit.phar --verbose tests/ControlTest
   tags:
     - nodejs
-    - linux
-    - osx
+    - nix
 #test-win:
 #  script:
 #    -
