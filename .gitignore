@@ -100,5 +100,4 @@ node_modules
 # Project specific
 doc
 tests/tmp
-tools
 output
