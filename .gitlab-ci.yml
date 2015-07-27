@@ -1,3 +1,18 @@
-test:
-  script: "php runTests.php"
-
+test-nix:
+  script:
+    - rm -rf tests/tmp
+    - mkdir tools
+    - mkdir tests/tmp
+    - php tools/phpunit.phar --verbose tests/ProcessTest
+    - php tools/phpunit.phar --verbose tests/ControlTest
+  tags:
+    - linux
+#test-win:
+#  script:
+#    -
+#    -
+#  tags:
+#    -windows
+doc:
+  script:
+    - php tools/phpDocumentor.phar -p -d src/ -t doc/ --template="clean"
