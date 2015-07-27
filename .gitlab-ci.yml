@@ -16,6 +16,6 @@ test-win:
   - windows
   - nodejs
   - php
-doc:
+docs:
   script:
     - php tools/phpDocumentor.phar -p -d src/ -t doc/ --template="clean"
