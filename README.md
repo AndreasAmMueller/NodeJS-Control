@@ -20,7 +20,7 @@ Small class to control your node.js scripts without console access.
 - shell access for the user running you webserver
 
 ## Bugs
-- currently only for unix systems
+- on windows machines no logfiles possible
 - report any other bug here: [BitBucket](https://bitbucket.org/BlackyPanther/nodejs-control/issues)
 
 -----
