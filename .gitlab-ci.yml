@@ -1,18 +1,20 @@
 test-nix:
   script:
     - rm -rf tests/tmp
-    - mkdir tools
-    - mkdir tests/tmp
+    - mkdir -p tests/tmp
     - php tools/phpunit.phar --verbose tests/ProcessTest
     - php tools/phpunit.phar --verbose tests/ControlTest
   tags:
+    - nodejs
     - linux
+    - osx
 #test-win:
 #  script:
 #    -
 #    -
 #  tags:
-#    -windows
+#    - windows
+#    - nodejs
 doc:
   script:
     - php tools/phpDocumentor.phar -p -d src/ -t doc/ --template="clean"
